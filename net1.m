@@ -21,7 +21,7 @@ function varargout = net1(varargin)
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
 
-% Last Modified by GUIDE v2.5 30-Mar-2017 22:30:00
+% Last Modified by GUIDE v2.5 07-May-2017 20:26:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -570,6 +570,7 @@ if (max(lable(:,4))>=3 && max(lable(:,2))>=15)
                  xlswrite(OutputPath,ak(:,:,i));
             end
         end
+        msgbox('Save data OK , please check the result folder');
          
     else
         msgbox('DKI failed:please choose ROI.');
@@ -655,9 +656,10 @@ for i =1 :slice_num
         xlswrite(OutputPath,fhighb(:,:)); 
         OutputPath = strcat('result\','IVIM_','Slice',num2str(i),'_r');
         xlswrite(OutputPath,r(:,:)); 
+        
     end
 end
-
+msgbox('Save data OK , please check the result folder');
 
 
 % --- Executes on button press in pushbutton8.
@@ -665,3 +667,73 @@ function pushbutton8_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton8 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton9.
+function pushbutton9_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton9 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global slice lable dwi ROI slice_num row column b
+if(max(max(ROI)) == 0)
+    msgbox('SE failed: please choose ROI.');
+end
+for i =1 :slice_num
+    if( ROI(i,1)* ROI(i,3)~= 0)
+        mask = zeros(row,column);
+        mask(int16(ROI(i,2)):int16(ROI(i,4)),int16(ROI(i,1)):int16(ROI(i,3))) = 1;
+        bvalue = [];
+        data = [];
+        num =1;
+        for j = 1:length(b)
+            if((lable(j,3)==i)&&(lable(j,2)==1))
+                bvalue = [bvalue,b((lable(j,1)))];
+                data(:,:,num) = dwi(:,:,i,j);
+                num = num + 1;
+            end
+        end
+        [DDC,a] = SE(data,bvalue,mask,row,column);
+        figure('NumberTitle', 'off', 'Name', strcat('SE_','Slice_',num2str(i))),imagesc(real(a)),colorbar,title('a value map');
+        figure('NumberTitle', 'off', 'Name', strcat('SE_','Slice_',num2str(i))),imagesc(real(DDC)),colorbar,title('DDC value map');
+        OutputPath = strcat('result\','SE_','Slice',num2str(i),'_a');
+        xlswrite(OutputPath,a(:,:));
+        OutputPath = strcat('result\','SE_','Slice',num2str(i),'_DDC');
+        xlswrite(OutputPath,DDC(:,:));
+        
+    end
+end
+msgbox('Save data OK , please check the result folder');
+
+
+
+% --- Executes on button press in pushbutton10.
+function pushbutton10_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global slice lable dwi ROI slice_num row column b
+if(max(max(ROI)) == 0)
+    msgbox('SE failed: please choose ROI.');
+end
+for i =1 :slice_num
+    if( ROI(i,1)* ROI(i,3)~= 0)
+        mask = zeros(row,column);
+        mask(int16(ROI(i,2)):int16(ROI(i,4)),int16(ROI(i,1)):int16(ROI(i,3))) = 1;
+        bvalue = [];
+        data = [];
+        num =1;
+        for j = 1:length(b)
+            if((lable(j,3)==i)&&(lable(j,2)==1))
+                bvalue = [bvalue,b((lable(j,1)))];
+                data(:,:,num) = dwi(:,:,i,j);
+                num = num + 1;
+            end
+        end
+        [adc] = ADC(data,bvalue,mask,row,column);
+         figure('NumberTitle', 'off', 'Name', strcat('ADC_','Slice_',num2str(i))),imagesc(adc),colorbar,title('ADC value map');
+         OutputPath = strcat('result\','ADC_','Slice',num2str(i),'_adc');
+        xlswrite(OutputPath,adc(:,:));
+        
+    end
+end
+msgbox('Save data OK , please check the result folder');
